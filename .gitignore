@@ -101,4 +101,3 @@ dbt_project/models/
 dbt_project/packages.yml
 dbt_project/package-lock.yml
 dbt_project/README.md
-requirements.txt
