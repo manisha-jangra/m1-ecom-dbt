@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: ecommerce_raw
+    schema: public
+
+    tables:
+      - name: raw_orders
+        loaded_at_field: updated_at
+
+        freshness:
+          warn_after: {count: 1, period: day}
+          error_after: {count: 2, period: day}
+
+      - name: raw_customers
+        loaded_at_field: created_at
+
+        freshness:
+          warn_after: {count: 1, period: day}
+          error_after: {count: 3, period: day}

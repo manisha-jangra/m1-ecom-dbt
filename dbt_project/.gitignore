@@ -1,4 +1,55 @@
+# 🔒 Virtual environment
+.venv/
+env/
+venv/
 
+# 🧠 Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 📦 dbt generated artifacts
 target/
 dbt_packages/
 logs/
+dbt_modules/
+
+# 🔐 Secrets / credentials
+.env
+*.env
+profiles.yml
+
+# ⚠️ Local / user-specific files
+.user.yml
+
+# 🧪 IDE / Editor settings
+.vscode/
+.idea/
+
+# 🧾 OS files
+.DS_Store
+Thumbs.db
+
+# 📄 Logs
+*.log
+
+# 🧬 Temporary files
+*.tmp
+*.temp
+
+# 📊 dbt docs generated files (inside target anyway)
+target/catalog.json
+target/manifest.json
+target/run_results.json
+
+# 📦 Build / dist
+build/
+dist/
+
+# 📓 Jupyter (if used)
+.ipynb_checkpoints/
+
+packages.yml
+package-lock.yml
+README.md
