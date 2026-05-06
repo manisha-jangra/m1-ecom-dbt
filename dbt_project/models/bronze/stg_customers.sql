@@ -1,6 +1,13 @@
 select
     customer_id,
-    name,
-    email,
-    created_at
-from raw_customers
+
+    initcap(trim(name)) as name,
+
+    lower(trim(email)) as email,
+
+    {{ safe_cast_timestamp('created_at') }} as created_at
+
+
+from {{ ref('raw_customers') }}
+
+where customer_id is not null

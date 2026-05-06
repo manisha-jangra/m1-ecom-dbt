@@ -1,20 +1,66 @@
 version: 2
 
 sources:
-  - name: ecommerce_raw
+  - name: raw
+    database: dbt_ecom
     schema: public
 
     tables:
-      - name: raw_orders
-        loaded_at_field: updated_at
+      - name: raw_customers
+        description: "Raw customer data from seed CSV"
+        loaded_at_field: created_at
 
         freshness:
           warn_after: {count: 1, period: day}
           error_after: {count: 2, period: day}
 
-      - name: raw_customers
+        columns:
+          - name: customer_id
+            tests:
+              - not_null
+              - unique
+
+          - name: email
+            tests:
+              - not_null
+
+      - name: raw_products
+        description: "Raw product data from seed CSV"
         loaded_at_field: created_at
 
         freshness:
           warn_after: {count: 1, period: day}
-          error_after: {count: 3, period: day}
+          error_after: {count: 2, period: day}
+
+        columns:
+          - name: product_id
+            tests:
+              - not_null
+              - unique
+
+      - name: raw_orders
+        description: "Raw order data from seed CSV"
+        loaded_at_field: order_date
+
+        freshness:
+          warn_after: {count: 1, period: day}
+          error_after: {count: 2, period: day}
+
+        columns:
+          - name: order_id
+            tests:
+              - not_null
+              - unique
+
+          - name: customer_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'raw_customers')
+                  field: customer_id
+
+          - name: product_id
+            tests:
+              - relationships:
+                  to: source('raw', 'raw_products')
+                  field: product_id

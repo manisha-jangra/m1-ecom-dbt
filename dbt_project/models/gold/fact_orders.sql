@@ -7,11 +7,14 @@
 select
     order_id,
     customer_id,
+    product_name,
+    category,
     order_date,
     amount
+
 from {{ ref('orders_enriched') }}
 
-where 1=1
+where amount is not null
 
 
 {{ backfill_filter('order_date') }}
