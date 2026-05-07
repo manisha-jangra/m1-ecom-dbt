@@ -14,8 +14,6 @@ select
 
 from {{ ref('orders_enriched') }}
 
-where amount is not null
-
 
 {{ backfill_filter('order_date') }}
 

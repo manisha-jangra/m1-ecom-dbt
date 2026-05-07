@@ -4,5 +4,4 @@ select
 count(distinct order_id) as total_orders,
 count(distinct customer_id) as total_customers,
 sum(amount) as total_revenue
-
 from {{ ref('fact_orders') }}
