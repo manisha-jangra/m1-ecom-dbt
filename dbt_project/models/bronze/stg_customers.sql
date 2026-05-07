@@ -5,7 +5,7 @@ select
 
     lower(trim(email)) as email,
 
-    {{ safe_cast_timestamp('created_at') }} as created_at
+    created_at
 
 
 from {{ ref('raw_customers') }}

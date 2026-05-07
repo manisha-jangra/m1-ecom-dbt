@@ -3,7 +3,7 @@ select
     customer_id,
     product_id,
 
-    {{ safe_cast_timestamp('order_date') }} as order_date,
+    order_date,
 
     case 
     -- This is a regex (pattern check) 

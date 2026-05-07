@@ -98,6 +98,7 @@ dim_products —— fact_orders
 ```bash
 python -m venv .dbt-env
 source .dbt-env/Scripts/activate   # Windows Git Bash
+export $(grep -v '^#' .env | xargs) # for read .env
 ```
 
 ---
@@ -256,16 +257,21 @@ freshness:
 ### Example:
 
 ```sql
-{{ safe_cast_timestamp('order_date') }}
+{{ incremental_filter('created_at') }}
 ```
 
 ```sql
-{% macro safe_cast_timestamp(column) %}
-case 
-    when {{ column }} ~ '^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$'
-    then {{ column }}::timestamp
-    else null
-end
+{% macro incremental_filter(column_name) %}
+
+{% if is_incremental() %}
+
+    and {{ column_name }} > (
+        select coalesce(max({{ column_name }}), '1900-01-01')
+        from {{ this }}
+    )
+
+{% endif %}
+
 {% endmacro %}
 ```
 

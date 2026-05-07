@@ -11,7 +11,7 @@ select
         else null
     end as price,
 
-    {{ safe_cast_timestamp('created_at') }} as created_at
+    created_at
 
 from {{ ref('raw_products') }}
 

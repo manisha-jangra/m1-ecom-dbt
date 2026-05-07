@@ -3,6 +3,7 @@ select
     o.customer_id,
     c.name as customer_name,
     p.product_name,
+    p.product_id,
     p.category,
     o.order_date,
     o.amount
