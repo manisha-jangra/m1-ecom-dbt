@@ -293,9 +293,10 @@ analyses/
 ## 🔹 Run Analysis Queries
 
 ```bash
-dbt show --select analyses.daily_revenue
-dbt show --select analyses.sales_summary
-dbt show --select analyses.top_products
+dbt show --select daily_revenue
+
+dbt show --select sales_summary
+dbt show --select top_products
 ```
 
 ---
