@@ -1,12 +1,13 @@
 select
     customer_id,
 
-    initcap(trim(name)) as name,
+    initcap(trim(name)) as customer_name,
 
     lower(trim(email)) as email,
 
-    created_at
+    initcap(trim(city)) as city,
 
+    cast(created_at as timestamp) as created_at
 
 from {{ ref('raw_customers') }}
 

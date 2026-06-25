@@ -1,380 +1,397 @@
-# 📊 Ecommerce Analytics Project (dbt + PostgreSQL)
+# Sales Analytics Platform - Milestone 2
+
+## Project Overview
+
+This project builds an analytics-ready reporting layer on top of transformed sales data and delivers actionable business insights through Power BI dashboards.
+
+The solution was built using:
+
+- PostgreSQL
+- dbt
+- Power BI
+- GitHub
+
+The project follows a dimensional modeling approach using Fact and Dimension tables and provides insights for multiple business personas.
 
 ---
 
-# 📌 Project Overview
-
-This project demonstrates an end-to-end **data analytics pipeline** using:
-
-* **PostgreSQL** → data storage
-* **dbt (Data Build Tool)** → data transformation
-
-Raw transactional data is ingested using **CSV seeds**, transformed using **Medallion Architecture (Bronze → Silver → Gold)**, and exposed as analytics-ready datasets using a **Star Schema**.
-
----
-
-# 🔄 Data Lifecycle (Raw → Transformed → Analytics)
+# Repository Structure
 
 ```text
-CSV Files (Raw Data)
-        ↓
-dbt Seeds → PostgreSQL Tables
-        ↓
-Bronze Layer (stg_* → cleaning & validation)
-        ↓
-Silver Layer (orders_enriched → joins & business logic)
-        ↓
-Gold Layer (fact & dimension tables)
-        ↓
-Analytics Layer (queries & insights)
+sales_analytics_project/
+
+├── dbt_project/
+│   └── models/
+│       └── gold/
+│           ├── fact_orders.sql
+│           ├── dim_customers.sql
+│           └── dim_products.sql
+
+├── dashboard/
+│   └── Sales_Analytics_M2.pbix
+
+├── sql/
+│   ├── total_revenue.sql
+│   ├── total_orders.sql
+│   ├── total_customers.sql
+│   ├── units_sold.sql
+│   ├── revenue_pm.sql
+│   ├── mom_percent.sql
+│   ├── revenue_by_month.sql
+│   ├── revenue_by_category.sql
+│   ├── revenue_by_payment_method.sql
+│   ├── revenue_by_brand.sql
+│   ├── revenue_by_city.sql
+│   ├── top_10_customers.sql
+│   └── order_level_details.sql
+
+└── README.md
 ```
 
 ---
 
-# 🏗️ Medallion Architecture Implementation
+# Analytics Ready Data Model
 
-| Layer     | Models                                         | Purpose                   |
-| --------- | ---------------------------------------------- | ------------------------- |
-| 🟤 Bronze | `stg_customers`, `stg_orders`, `stg_products`  | Data cleaning, validation |
-| ⚪ Silver  | `orders_enriched`                              | Joins & business logic    |
-| 🟡 Gold   | `fact_orders`, `dim_customers`, `dim_products` | Analytics-ready tables    |
+## Fact Table
+
+### fact_orders
+
+**Grain:** One row per order transaction.
+
+Columns:
+
+- Order ID
+- Customer ID
+- Product ID
+- Order Date
+- Quantity
+- Amount
+- Payment Method
 
 ---
 
-# 📦 Data Model (Star Schema)
+## Dimension Tables
 
-```text
-            dim_customers
-                 |
-                 |
-dim_products —— fact_orders
+### dim_customers
+
+- Customer ID
+- Customer Name
+- Email
+- City
+- Created At
+
+### dim_products
+
+- Product ID
+- Product Name
+- Category
+- Brand
+- Price
+- Created At
+
+---
+
+# Semantic Layer
+
+The semantic layer is implemented using the Power BI Data Model.
+
+### Relationships
+
+- fact_orders[customer_id] → dim_customers[customer_id]
+- fact_orders[product_id] → dim_products[product_id]
+
+### Semantic Consistency
+
+Business-friendly names and centralized DAX measures are used across all dashboards to ensure consistent metric definitions and reporting.
+
+---
+
+# Metrics and Definitions
+
+## Total Revenue
+
+**Definition:** Total sales revenue generated.
+
+```DAX
+Revenue =
+SUM(fact_orders[amount])
 ```
 
 ---
 
-## 📊 Fact Table: `fact_orders`
+## Total Orders
 
-* `order_id` (Primary Key)
-* `customer_id` (Foreign Key)
-* `product_id` (Foreign Key)
-* `order_date`
-* `amount`
+**Definition:** Total number of unique orders.
 
----
-
-## 📋 Dimension Tables
-
-### `dim_customers`
-
-* `customer_id` (Primary Key)
-* `name`
-* `email`
-
-### `dim_products`
-
-* `product_id` (Primary Key)
-* `product_name`
-* `category`
-
----
-
-# ❓ Why Star Schema (Not 3NF)
-
-| Star Schema             | 3NF                        |
-| ----------------------- | -------------------------- |
-| Optimized for analytics | Optimized for transactions |
-| Fewer joins             | Many joins                 |
-| Faster queries          | Slower queries             |
-| Denormalized            | Normalized                 |
-
-👉 Star schema improves **performance and simplicity for reporting**
-
----
-
-# ⚙️ Setup Instructions
-
-## 1. Create Virtual Environment
-
-```bash
-python -m venv .dbt-env
-source .dbt-env/Scripts/activate   # Windows Git Bash
-export $(grep -v '^#' .env | xargs) # for read .env
+```DAX
+Total Orders =
+DISTINCTCOUNT(fact_orders[order_id])
 ```
 
 ---
 
-## 2. Install dbt
+## Total Customers
 
-```bash
-pip install dbt-core dbt-postgres
-dbt --version
+**Definition:** Total number of unique customers.
+
+```DAX
+Total Customers =
+DISTINCTCOUNT(fact_orders[customer_id])
 ```
 
 ---
 
-## 3. Setup PostgreSQL
+## Units Sold
 
-```sql
-CREATE DATABASE dbt_ecom;
+**Definition:** Total quantity sold.
+
+```DAX
+Units Sold =
+SUM(fact_orders[quantity])
 ```
 
 ---
 
-## 4. Configure dbt Profile
+## Revenue PM
 
-📁 `~/.dbt/profiles.yml`
+**Definition:** Revenue generated during the previous month.
 
-```yaml
-dbt_project:
-  target: dev
-  outputs:
-    dev:
-      type: postgres
-      host: localhost
-      user: postgres
-      password: your_password
-      port: 5432
-      dbname: dbt_ecom
-      schema: public
-```
+**Business Purpose:** Enables comparison of current performance against the previous month.
 
 ---
 
-# 📁 Project Structure
+## MoM %
 
-```text
-models/
-  bronze/
-    stg_customers.sql
-    stg_orders.sql
-    stg_products.sql
+**Definition:** Month-over-Month revenue growth percentage.
 
-  silver/
-    orders_enriched.sql
-
-  gold/
-    fact_orders.sql
-    dim_customers.sql
-    dim_products.sql
-
-seeds/
-analyses/
-macros/
-tests/
-```
+**Business Purpose:** Measures revenue growth and trend performance over time.
 
 ---
 
-# 🚀 How to Run the Project
+# Dashboard 1: Overview Dashboard
 
-## 1. Load Raw Data
+## Target Persona
 
-```bash
-dbt seed
-```
+All business users requiring a quick summary of business performance.
 
----
+## Questions Answered
 
-## 2. Check Data Freshness
+- What is the overall business performance?
+- How much revenue has been generated?
+- How many orders and customers are there?
+- Which categories contribute the most revenue?
+- Which products perform best?
 
-```bash
-dbt source freshness
-```
+### KPIs
 
----
+- Total Revenue
+- Total Orders
+- Total Customers
+- Units Sold
 
-## 3. Run Transformations
+### Visualizations
 
-```bash
-dbt run
-```
+- Revenue Trend (Line Chart)
+- Revenue by Category (Donut Chart)
+- Top Products by Revenue
+- Revenue by City
 
----
+### Key Insights
 
-## 4. Run Specific Model
-
-```bash
-dbt run --select fact_orders
-```
-
----
-
-## 5. Run Tests
-
-```bash
-dbt test
-```
+- Electronics contributes the highest share of revenue.
+- Premium products drive a significant portion of sales.
+- Revenue is concentrated in a few major cities.
+- Overall business performance remains stable.
 
 ---
 
-## 6. Full Refresh
+# Dashboard 2: Business / Leadership Dashboard
 
-```bash
-dbt run --full-refresh
-```
+## Target Persona
 
----
+Business Leaders and Decision Makers
 
-## 7. Backfill Historical Data
+## Questions Answered
 
-```bash
-dbt run --select fact_orders \
-  --vars '{"start_date": "2024-01-01", "end_date": "2024-01-10"}'
-```
+- How much revenue is the business generating?
+- What is the revenue growth trend?
+- Which categories drive the most revenue?
+- Which payment methods are most used?
+- Which brands generate the highest revenue?
+- Which cities contribute the most revenue?
+- What is the expected future revenue trend?
 
----
+### KPI Cards
 
-# 🔄 Incremental Model
+- Total Revenue
+- Total Orders
+- Total Customers
+- Units Sold
+- Revenue PM
+- MoM %
 
-```sql
-{{ config(
-    materialized='incremental',
-    unique_key='order_id',
-    incremental_strategy='merge'
-) }}
-```
+### Visualizations
 
-### ✅ Benefits:
+#### Revenue by Month & Forecast
 
-* Faster execution
-* Handles large datasets
-* Updates + inserts (MERGE)
+- Line Chart
 
----
+#### Total Revenue by Category
 
-# ⏱️ Data Freshness Checks
+- Donut Chart
 
-```yaml
-freshness:
-  warn_after: {count: 1, period: day}
-  error_after: {count: 2, period: day}
-```
+#### Total Revenue by Payment Method
 
----
+- Pie Chart
 
-# 🧠 dbt Macros (Reusable Logic)
+#### Total Revenue by Brand
 
-### Example:
+- Revenue Comparison Visual
 
-```sql
-{{ incremental_filter('created_at') }}
-```
+#### Total Revenue by City
 
-```sql
-{% macro incremental_filter(column_name) %}
+- Revenue Comparison Visual
 
-{% if is_incremental() %}
+### Key Insights
 
-    and {{ column_name }} > (
-        select coalesce(max({{ column_name }}), '1900-01-01')
-        from {{ this }}
-    )
-
-{% endif %}
-
-{% endmacro %}
-```
+- Electronics is the highest revenue-generating category.
+- Premium brands contribute the majority of revenue.
+- Digital payment methods dominate customer transactions.
+- Revenue is concentrated in high-performing cities.
+- Revenue trend shows stable business growth.
+- Forecast suggests continued revenue generation in upcoming periods.
 
 ---
 
-# 📊 Analytics Layer (Analyses)
+# Dashboard 3: Analyst Dashboard
 
-Located in:
+## Target Persona
 
-```text
-analyses/
-  daily_revenue.sql
-  sales_summary.sql
-  top_products.sql
-```
+Business Analysts and Operations Teams
 
----
+## Questions Answered
 
-## 🔹 Run Analysis Queries
+- Which customers generate the most revenue?
+- What are the highest-value transactions?
+- Which payment methods perform best?
+- Are there unusual revenue spikes or drops?
+- What purchasing patterns exist across customers?
 
-```bash
-dbt show --select daily_revenue
+### KPI Cards
 
-dbt show --select sales_summary
-dbt show --select top_products
-```
+- Total Revenue
+- Total Orders
+- Total Customers
+- Units Sold
 
----
+### Visualizations
 
-### Option 3 (Compile & Run)
+#### Revenue Trend with Forecast
 
-```bash
-dbt compile
-```
+- Line Chart
 
-Then run SQL from:
+#### Top 10 Customers by Revenue
 
-```text
-target/compiled/dbt_project/analyses/
-```
+- Revenue Ranking Visual
 
----
+#### Revenue by Payment Method
 
-# 📚 dbt Documentation
+- Donut Chart
 
-## Generate Docs
+#### Order Level Details
 
-```bash
-dbt docs generate
-```
+- Table Visual
 
----
+Columns:
 
-## Serve Docs
+- Order ID
+- Order Date
+- Customer Name
+- City
+- Product Name
+- Category
+- Brand
+- Quantity
+- Amount
+- Payment Method
 
-```bash
-dbt docs serve
-```
+### Key Insights
 
-Open:
-
-```text
-http://localhost:8080
-```
-
----
-
-## 🔥 Features
-
-* Model lineage graph
-* Column-level documentation
-* Data flow visualization
+- Top customers contribute a significant portion of total revenue.
+- Revenue is concentrated among a small number of high-value transactions.
+- Payment preferences reveal customer behavior patterns.
+- Revenue spikes can be identified and investigated.
+- Detailed order-level analysis supports operational decision-making.
 
 ---
 
-# ✅ Features Implemented
+# SQL Queries
 
-* ✔ CSV-based ingestion (dbt seeds)
-* ✔ Medallion architecture
-* ✔ Star schema modeling
-* ✔ Incremental models (MERGE)
-* ✔ Backfill strategy
-* ✔ Data freshness checks
-* ✔ Data quality tests
-* ✔ Reusable macros
-* ✔ Analytical queries
-* ✔ dbt documentation
+The SQL folder contains all queries used to derive dashboard metrics and visualizations.
 
----
+Files include:
 
-# 🧠 Execution Flow (Recommended)
-
-```bash
-dbt seed
-dbt source freshness
-dbt run
-dbt test
-dbt docs generate
-dbt docs serve
-```
+- total_revenue.sql
+- total_orders.sql
+- total_customers.sql
+- units_sold.sql
+- revenue_pm.sql
+- mom_percent.sql
+- revenue_by_month.sql
+- revenue_by_category.sql
+- revenue_by_payment_method.sql
+- revenue_by_brand.sql
+- revenue_by_city.sql
+- top_10_customers.sql
+- order_level_details.sql
 
 ---
 
-# 👩‍💻 Author
+# Stretch Goals Implemented
 
-**Manisha Jangra**
+## Time-Based Comparison
+
+Implemented:
+
+- Revenue PM
+- MoM %
+
+Purpose:
+
+Compare current revenue against previous periods.
+
+---
+
+## Forecasting
+
+Implemented using Power BI Forecast functionality.
+
+Purpose:
+
+Predict future revenue trends based on historical sales performance.
+
+---
+
+## Anomaly Detection
+
+Implemented using Power BI Analytics Pane.
+
+Purpose:
+
+Identify unusual spikes and drops in revenue performance for further investigation.
+
+---
+
+# Known Data Limitations
+
+- Dataset contains a limited number of customers and products.
+- Geographic analysis is restricted to city-level information.
+- Historical data volume is limited for long-term forecasting.
+- Customer segmentation attributes are unavailable.
+- Marketing and campaign data are not available.
+
+---
+
+# Conclusion
+
+This project delivers a complete analytics reporting layer with semantic consistency, business-focused KPIs, forecasting, anomaly detection, and persona-based dashboards that support data-driven decision-making for both leadership and analytical users.

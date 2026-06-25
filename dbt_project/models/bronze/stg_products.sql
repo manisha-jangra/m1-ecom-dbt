@@ -5,13 +5,13 @@ select
 
     initcap(trim(category)) as category,
 
-    case 
+    initcap(trim(brand)) as brand,
+
+    case
         when price::text ~ '^\d+(\.\d+)?$'
         then price::numeric
         else null
-    end as price,
-
-    created_at
+    end as price
 
 from {{ ref('raw_products') }}
 

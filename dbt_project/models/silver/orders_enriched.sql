@@ -1,14 +1,31 @@
 select
     o.order_id,
-    o.customer_id,
-    c.name as customer_name,
-    p.product_name,
-    p.product_id,
-    p.category,
-    o.order_date,
-    o.amount
 
-from {{ ref('stg_orders') }} o  
+    o.customer_id,
+
+    c.customer_name,
+
+    c.city,
+
+    p.product_id,
+
+    p.product_name,
+
+    p.category,
+
+    p.brand,
+
+    p.price,
+
+    o.order_date,
+
+    o.quantity,
+
+    o.amount,
+
+    o.payment_method
+
+from {{ ref('stg_orders') }} o
 
 left join {{ ref('stg_customers') }} c
     on o.customer_id = c.customer_id
