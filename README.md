@@ -219,7 +219,7 @@ Business Leaders and Decision Makers
 - Which payment methods are most used?
 - Which brands generate the highest revenue?
 - Which cities contribute the most revenue?
-- What is the expected future revenue trend?
+- What is the expected future revenue trend?..
 
 ### KPI Cards
 
